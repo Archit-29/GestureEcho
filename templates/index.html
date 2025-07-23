@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestureEcho - Smart Glove Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-header i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: #667eea;
+        }
+
+        .card-header h2 {
+            color: #333;
+            font-size: 1.4rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .sensor-display {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .finger-sensor {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+
+        .finger-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .sensor-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .current-gesture {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .gesture-name {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .spoken-phrase {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .gesture-mapping {
+            margin: 15px 0;
+        }
+
+        .mapping-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .mapping-gesture {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .mapping-phrase {
+            color: #495057;
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sensor-display {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-hand-rock"></i> GestureEcho</h1>
+            <p>Smart Glove Speech Assistant Interface</p>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="grid">
+            <!-- Live Gesture Display -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-eye"></i>
+                    <h2>Live Gesture Recognition</h2>
+                </div>
+                
+                <div class="current-gesture">
+                    <div class="gesture-name" id="currentGesture">No Gesture</div>
+                    <div class="spoken-phrase" id="spokenPhrase">Waiting for input...</div>
+                </div>
+                
+                <div class="status-indicator" id="connectionStatus">
+                    <i class="fas fa-wifi"></i> Checking Connection...
+                </div>
+            </div>
+
+            <!-- Sensor Data Display -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Live Sensor Data</h2>
+                </div>
+                
+                <div class="sensor-display">
+                    <div class="finger-sensor">
+                        <div class="finger-name">Thumb</div>
+                        <div class="sensor-value" id="thumbValue">0.00</div>
+                    </div>
+                    <div class="finger-sensor">
+                        <div class="finger-name">Index</div>
+                        <div class="sensor-value" id="indexValue">0.00</div>
+                    </div>
+                    <div class="finger-sensor">
+                        <div class="finger-name">Middle</div>
+                        <div class="sensor-value" id="middleValue">0.00</div>
+                    </div>
+                    <div class="finger-sensor">
+                        <div class="finger-name">Ring</div>
+                        <div class="sensor-value" id="ringValue">0.00</div>
+                    </div>
+                    <div class="finger-sensor">
+                        <div class="finger-name">Pinky</div>
+                        <div class="sensor-value" id="pinkyValue">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Collection Section -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-database"></i>
+                    <h2>Data Collection</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gestureSelect">Select Gesture to Train:</label>
+                    <select id="gestureSelect">
+                        <option value="fist">Fist</option>
+                        <option value="open_hand">Open Hand</option>
+                        <option value="peace">Peace Sign</option>
+                        <option value="thumbs_up">Thumbs Up</option>
+                        <option value="pointing">Pointing</option>
+                        <option value="ok_sign">OK Sign</option>
+                        <option value="call_me">Call Me</option>
+                        <option value="rock_on">Rock On</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" onclick="collectSample()">
+                    <i class="fas fa-plus"></i> Collect Sample
+                </button>
+                
+                <div class="stats-grid" id="dataStats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalSamples">0</div>
+                        <div class="stat-label">Total Samples</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Training -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-brain"></i>
+                    <h2>Model Training</h2>
+                </div>
+                
+                <p>Train the machine learning model with collected data:</p>
+                
+                <button class="btn btn-success" onclick="trainModel()">
+                    <i class="fas fa-cog"></i> Train Model
+                </button>
+                
+                <div id="trainingStatus"></div>
+            </div>
+        </div>
+
+        <!-- Gesture Mapping -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-map"></i>
+                <h2>Gesture Phrase Mapping</h2>
+            </div>
+            
+            <p>Customize what each gesture says:</p>
+            
+            <div id="gestureMappings"></div>
+            
+            <button class="btn btn-secondary" onclick="updateMappings()">
+                <i class="fas fa-save"></i> Save Mappings
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSensorData = {
+            thumb: 0, index: 0, middle: 0, ring: 0, pinky: 0
+        };
+
+        // Update status periodically
+        function updateStatus() {
+            fetch('/current_status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentGesture').textContent = 
+                        data.current_gesture || 'No Gesture';
+                    document.getElementById('spokenPhrase').textContent = 
+                        data.last_phrase || 'Waiting for input...';
+                    
+                    const statusEl = document.getElementById('connectionStatus');
+                    if (data.model_loaded) {
+                        statusEl.className = 'status-indicator status-connected';
+                        statusEl.innerHTML = '<i class="fas fa-check"></i> Model Ready';
+                    } else {
+                        statusEl.className = 'status-indicator status-disconnected';
+                        statusEl.innerHTML = '<i class="fas fa-times"></i> Model Not Loaded';
+                    }
+                    
+                    loadGestureMappings(data.gesture_map);
+                })
+                .catch(error => {
+                    const statusEl = document.getElementById('connectionStatus');
+                    statusEl.className = 'status-indicator status-disconnected';
+                    statusEl.innerHTML = '<i class="fas fa-times"></i> Connection Error';
+                });
+        }
+
+        // Update data statistics
+        function updateDataStats() {
+            fetch('/data_stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalSamples').textContent = data.total_samples;
+                    
+                    // Update gesture-specific stats
+                    const statsContainer = document.getElementById('dataStats');
+                    let html = `
+                        <div class="stat-card">
+                            <div class="stat-number">${data.total_samples}</div>
+                            <div class="stat-label">Total Samples</div>
+                        </div>
+                    `;
+                    
+                    if (data.gestures) {
+                        Object.entries(data.gestures).forEach(([gesture, count]) => {
+                            html += `
+                                <div class="stat-card">
+                                    <div class="stat-number">${count}</div>
+                                    <div class="stat-label">${gesture}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    statsContainer.innerHTML = html;
+                });
+        }
+
+        // Collect training sample
+        function collectSample() {
+            const gestureLabel = document.getElementById('gestureSelect').value;
+            
+            const data = {
+                ...currentSensorData,
+                gesture_label: gestureLabel
+            };
+            
+            fetch('/collect_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert('Sample collected successfully!', 'success');
+                    updateDataStats();
+                } else {
+                    showAlert('Error collecting sample: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Error: ' + error.message, 'error');
+            });
+        }
+
+        // Train model
+        function trainModel() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner loading"></i> Training...';
+            button.disabled = true;
+            
+            fetch('/train_model', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert('Model trained successfully!', 'success');
+                } else {
+                    showAlert('Training error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Error: ' + error.message, 'error');
+            })
+            .finally(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Load gesture mappings
+        function loadGestureMappings(mappings = null) {
+            if (!mappings) {
+                fetch('/gesture_map')
+                    .then(response => response.json())
+                    .then(data => loadGestureMappings(data));
+                return;
+            }
+            
+            const container = document.getElementById('gestureMappings');
+            let html = '';
+            
+            Object.entries(mappings).forEach(([gesture, phrase]) => {
+                html += `
+                    <div class="mapping-item">
+                        <span class="mapping-gesture">${gesture}:</span>
+                        <input type="text" class="mapping-phrase" 
+                               value="${phrase}" 
+                               data-gesture="${gesture}">
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Update gesture mappings
+        function updateMappings() {
+            const mappings = {};
+            const inputs = document.querySelectorAll('.mapping-phrase[data-gesture]');
+            
+            inputs.forEach(input => {
+                mappings[input.dataset.gesture] = input.value;
+            });
+            
+            fetch('/gesture_map', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(mappings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert('Mappings updated successfully!', 'success');
+                } else {
+                    showAlert('Error updating mappings: ' + data.message, 'error');
+                }
+            });
+        }
+
+        // Show alert messages
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alert, 
+                document.querySelector('.container').firstChild.nextSibling);
+            
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Simulate sensor data updates (replace with actual WebSocket or polling)
+        function simulateSensorData() {
+            // This would normally come from the ESP32 via WebSocket or polling
+            currentSensorData = {
+                thumb: (Math.random()).toFixed(2),
+                index: (Math.random()).toFixed(2),
+                middle: (Math.random()).toFixed(2),
+                ring: (Math.random()).toFixed(2),
+                pinky: (Math.random()).toFixed(2)
+            };
+            
+            document.getElementById('thumbValue').textContent = currentSensorData.thumb;
+            document.getElementById('indexValue').textContent = currentSensorData.index;
+            document.getElementById('middleValue').textContent = currentSensorData.middle;
+            document.getElementById('ringValue').textContent = currentSensorData.ring;
+            document.getElementById('pinkyValue').textContent = currentSensorData.pinky;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+            updateDataStats();
+            loadGestureMappings();
+            
+            // Update status every 2 seconds
+            setInterval(updateStatus, 2000);
+            
+            // Update data stats every 5 seconds
+            setInterval(updateDataStats, 5000);
+            
+            // Simulate sensor data updates (remove when using real data)
+            setInterval(simulateSensorData, 1000);
+        });
+    </script>
+</body>
+</html>
